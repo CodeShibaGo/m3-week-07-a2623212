@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+     {% if title %}
+    <title>{{ title }} - MicroBlog </title>
+     {% else %}
+    <title>My MicroBlog!</title>
+     {% endif %}
+</head>
+<body>
+    <div>
+        My Blog:
+         <a href="{{ url_for('index') }}">Home</a>
+            {% if current_user.is_anonymous %}
+            <a href="{{ url_for('login') }}">Login</a>
+            {% else %}
+            <a href="{{ url_for('user', username=current_user.username) }}">Profile</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
+    </div>
+    <hr>
+<!-- If submit successful-->
+    {% with messages = get_flashed_messages() %}
+    {% if message %}
+    <ul>
+        {% for message in messages %}
+        <li>{{message}}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+<!-- This is depending on the templates -->
+    {% block content %}{% endblock%}
+</body>
+</html>
