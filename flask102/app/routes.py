@@ -5,7 +5,15 @@ from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm
 from app.models import User
 from urllib.parse import urlsplit
+from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
+import mysql.connector
+
+conn = mysql.connector.connect(user='root', password='root',
+                              host='127.0.0.1',
+                              database='MicroBlogData2')
+
+cursor = conn.cursor()
 
 
 @app.before_request
@@ -59,20 +67,30 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-
+# Register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Welcome to register a User!')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirmPassword = request.form.get('confirmPassword')
+        hashed_password = generate_password_hash(password)
+        sql = "INSERT INTO user (username, email, password) VALUES (%s, %s, %s)"
+        val = (username, email, hashed_password)
+        cursor.execute(sql, val)
+        # 提交事務
+        conn.commit()
+        # 關閉游標和連接
+        cursor.close()
+        conn.close()    
+        flash('Registration successful')
         return redirect(url_for('login'))
-    return render_template('register.html', title='Register', form=form)
+    
+
+    return render_template('register.html', title='Register')
 
 
 @app.route('/user/<username>')

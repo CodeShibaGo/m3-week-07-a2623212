@@ -1,39 +1,15 @@
-{% extends "base.html" %}
-
-{% block content %}
-    <h1>Register</h1>
-    <form action=""method="post">
-        {{form.hidden_tag() }}
-        <p>
-            {{form.username.label}}<br>
-            {{form.username(size=32) }}<br>
-            {% for error in form.username.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{form.email.label}}<br>
-            {{form.email(size=64) }}<br>
-            {% for error in form.email.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{form.password.label}}<br>
-            {{ form
-
-.password(size=32) }}<br>
-            {% for error in form.password.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{form.password2.label}}<br>
-            {{form.password2(size=32) }}<br>
-            {% for error in form.password2.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
+{% extends "base.html" %} {% block content %}
+<h1>Register</h1>
+<form action="" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username" required />
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email" required />
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" required />
+  <label for="confirmPassword">Repeat Password:</label>
+  <input type="password" id="confirmPassword" name="confirmPassword" required />
+  <input type="submit" value="Register" />
+</form>
 {% endblock %}
