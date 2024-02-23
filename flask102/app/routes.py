@@ -2,11 +2,11 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import select, func
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
+from app.forms import EditProfileForm
 from app.models import User
 from urllib.parse import urlsplit
-from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
+from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 
 conn = mysql.connector.connect(user='root', password='root',
@@ -18,6 +18,7 @@ cursor = conn.cursor()
 
 @app.before_request
 def before_request():
+    print('before request')
     if current_user.is_authenticated:
         current_user.last_seen = datetime.now(timezone.utc)
         db.session.commit()
@@ -27,6 +28,7 @@ def before_request():
 @app.route('/index')
 @login_required
 def index():
+    print('Index!')
     posts = [
         {
             'author': {'username': 'Kenny'},
@@ -39,27 +41,42 @@ def index():
     ]
     return render_template(template_name_or_list='index.html', title='Home', posts=posts)
 
-
+# Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        input_name = form.username.data
-        user = db.session.scalar(select(User).where(
-            User.username == {input_name}
-        ))
-        if user is None or not user.check_password(form.password.data):
-            flash('Incorrect username or password')
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        remember_me = request.form.get('rememberMe')
+        # From Database get the username and password
+        query = ("SELECT password, email, id FROM user WHERE username = %s ")
+        cursor.execute(query, (username,))
+        result = cursor.fetchone()
+        if result is None:
             print('Incorrect username or password')
             return redirect(url_for('login'))
-        login_user(user, remember=form.remember_me.data)
+
+        hash_password = result[0]
+        email = result[1]
+        id = result[2]
+
+        if not check_password_hash(hash_password, password):
+            print('Incorrect username or password')
+            return redirect(url_for('login'))
+       
+        user = User(username,email)
+        login_user(user, remember=True)
+        print('login success')
+        print(current_user.is_active)
+        print(current_user.is_authenticated)
         next_page = request.args.get('next')
         if not next_page or urlsplit(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
-    return render_template(template_name_or_list='login.html', title='Login', form=form)
+    return render_template(template_name_or_list='login.html', title='Login')
 
 
 @app.route('/logout')
