@@ -77,6 +77,9 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         confirmPassword = request.form.get('confirmPassword')
+        if password != confirmPassword:
+            flash('Passwords do not match')
+            return redirect(url_for('register'))
         hashed_password = generate_password_hash(password)
         sql = "INSERT INTO user (username, email, password) VALUES (%s, %s, %s)"
         val = (username, email, hashed_password)
