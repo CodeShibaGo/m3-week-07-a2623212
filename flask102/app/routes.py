@@ -19,6 +19,7 @@ cursor = conn.cursor()
 @app.before_request
 def before_request():
     print('before request')
+    print(current_user.is_authenticated)
     if current_user.is_authenticated:
         current_user.last_seen = datetime.now(timezone.utc)
         db.session.commit()
@@ -44,8 +45,8 @@ def index():
 # Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('index'))
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -67,15 +68,20 @@ def login():
             print('Incorrect username or password')
             return redirect(url_for('login'))
        
-        user = User(username,email)
-        login_user(user, remember=True)
-        print('login success')
-        print(current_user.is_active)
-        print(current_user.is_authenticated)
-        next_page = request.args.get('next')
-        if not next_page or urlsplit(next_page).netloc != '':
-            next_page = url_for('index')
-        return redirect(next_page)
+        user = User.query.filter_by(username=username).first()
+        print(user)
+        if user:
+            login_user(user, remember=True)
+            print('login success')
+            print(current_user.is_active)
+            print(current_user.is_authenticated)
+            print(current_user.is_anonymous)
+            print(current_user.get_id())
+            # 重定向到 “next” 頁面
+            next_page = request.args.get('next')
+            if not next_page or urlsplit(next_page).netloc != '':
+                next_page = url_for('index')
+            return redirect(next_page)
     return render_template(template_name_or_list='login.html', title='Login')
 
 

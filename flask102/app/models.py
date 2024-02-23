@@ -38,8 +38,9 @@ class User(UserMixin, db.Model):
 
 
 @login.user_loader
-def load_user(id):
-    return db.session.get(User, id)
+def load_user(user_id):
+    user = User.query.get(user_id)
+    return user
 
 
 class Post(db.Model):
