@@ -2,9 +2,9 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import select, func
 from app import app, db
-from app.forms import EditProfileForm, EmptyForm
+from app.forms import EditProfileForm, EmptyForm, PostForm
 import sqlalchemy as sa
-from app.models import User
+from app.models import User, Post
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -26,22 +26,22 @@ def before_request():
         db.session.commit()
 
 
-@app.route('/')
-@app.route('/index')
+# Index
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
     print('Index!')
-    posts = [
-        {
-            'author': {'username': 'Kenny'},
-            'body': "Japan's SAKURA is beautiful!"
-        },
-        {
-            'author': {'username': 'Mandy'},
-            'body': "My baby is quite, right?"
-        }
-    ]
-    return render_template(template_name_or_list='index.html', title='Home', posts=posts)
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is shared')
+        return redirect(url_for('index'))
+    posts = db.session.scalars(current_user.following_posts()).all()
+    return render_template("index.html", title='首頁', form=form,
+                           posts=posts)
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -110,9 +110,9 @@ def register():
         cursor.execute(sql, val)
         # 提交事務
         conn.commit()
-        # 關閉游標和連接
-        cursor.close()
-        conn.close()    
+        # # 關閉游標和連接
+        # cursor.close()
+        # conn.close()    
         flash('Registration successful')
         return redirect(url_for('login'))
     
@@ -191,3 +191,11 @@ def unfollow(username):
         return redirect(url_for('user', username=username))
     else:
         return redirect(url_for('index'))
+
+# All posts
+@app.route('/explore')
+@login_required
+def explore():
+    query = sa.select(Post).order_by(Post.timestamp.desc())
+    posts = db.session.scalars(query).all()
+    return render_template('index.html', title='Explore', posts=posts)
