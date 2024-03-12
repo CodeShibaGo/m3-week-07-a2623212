@@ -1,0 +1,30 @@
+{% extends "base.html"%} {% block content %}
+<h1>Login</h1>
+<form action="" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <div class="mb-3">
+    <label for="username" class="form-label">Username:</label>
+    <input type="text" class="form-control" id="username" name="username" required />
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password:</label>
+    <input type="password" class="form-control" id="password" name="password" required />
+  </div>
+  <div class="mb-3">
+    <input type="checkbox" id="rememberMe" name="rememberMe" class="form-check-input me-1" />
+    <label for="rememberMe" class="form-check-label" >Remember me</label>
+  </div>
+  <div class="mb-3" >
+    <input type="submit" value="Login" class="btn btn-light" />
+  </div>
+</form>
+<p class="text-dark-emphasis">
+  New User？
+  <a href="{{ url_for('register') }}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"> Click to Register!</a>
+</p>
+<p class="text-dark-emphasis">
+  Forget Passwords?
+  <a href="{{ url_for('reset_password_request') }}" class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"> Click here to reset! </a>
+</p>
+
+{% endblock %}

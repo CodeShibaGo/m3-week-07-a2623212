@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block content %}
+<h1>Register</h1>
+<form action="" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <div class="mb-3">
+    <label for="username" class="form-label">Username:</label>
+    <input type="text" id="username" name="username"  class="form-control"required />
+  </div>
+  <div class="mb-3">
+    <label for="email" class="form-label">Email:</label>
+    <input type="email" id="email" name="email" class="form-control" required />
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password:</label>
+    <input type="password" id="password" name="password" class="form-control" required />
+  </div>
+  <div class="mb-3">
+    <label for="confirmPassword" class="form-label">Repeat Password:</label>
+    <input
+      type="password"
+      id="confirmPassword"
+      name="confirmPassword"
+      class="form-control"
+      required
+    />
+  </div>
+  <div class="mb-3">
+    <input type="submit" value="Register"  class="btn btn-light text-dark-emphasis" />
+  </div>
+</form>
+{% endblock %}
